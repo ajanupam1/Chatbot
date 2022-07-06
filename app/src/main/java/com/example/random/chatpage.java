@@ -26,9 +26,20 @@ public class chatpage extends AppCompatActivity {
     ArrayList<String> message = new ArrayList<>();
     ArrayAdapter<String> ad ;
     ListView sendmessage ;
+    String msgsend = "";
+    Encrypt encrypt;
     public void sent(View view){
         EditText ms = findViewById(R.id.test);
-        String msgsend = ms.getText().toString() ;
+        try {
+            encrypt.init();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            msgsend = encrypt.encrypt(ms.getText().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         ParseObject Message = new ParseObject("Message");
         Message.put("sender" , ParseUser.getCurrentUser().getUsername());
         Message.put("receiver" , username);
@@ -53,6 +64,7 @@ public class chatpage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chatpage);
+          encrypt = new Encrypt();
           Intent intent = getIntent();
           username = intent.getStringExtra("user");
           setTitle("chat to " + username);
@@ -77,7 +89,17 @@ public class chatpage extends AppCompatActivity {
                 if(e == null){
                     if(list.size() > 0){
                         for(ParseObject msg : list){
-                            String msgcontent = msg.getString("message");
+                            try {
+                                encrypt.init();
+                            } catch (Exception exception) {
+                                exception.printStackTrace();
+                            }
+                            String msgcontent = null;
+                            try {
+                                msgcontent = encrypt.decrypt(msg.getString("message"));
+                            } catch (Exception exception) {
+                                exception.printStackTrace();
+                            }
                             if(msg.getString("sender").equals(username)){
                                 msgcontent = "<" + msgcontent ;
                             }
